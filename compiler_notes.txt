@@ -1,0 +1,7 @@
+//compile notes
+/*
+
+8/9/2018
+command line -> $ clang++ -std=c++11 -o mellotron main.cpp ./utils/AudioFile.cpp
+
+*/
