@@ -4,4 +4,8 @@
 8/9/2018
 command line -> $ clang++ -std=c++11 -o mellotron main.cpp ./utils/AudioFile.cpp
 
+10/9/2018
+#requires brew install sfml
+command line -> $ clang++ -framework SFML -framework SFML-audio -std=c++11 -o mellotron main.cpp ./utils/AudioFile.cpp
+
 */

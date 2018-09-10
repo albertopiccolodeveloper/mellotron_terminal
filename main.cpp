@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
 //utils
-
+#include "utils/AudioFile.h" //thank you Adam Stark https://github.com/adamstark/AudioFile
+#include <SFML/Audio.hpp>
 //Piano Class
 #include "Key.h"
 #include "Piano.h"
@@ -11,7 +12,7 @@ using namespace std;
 
 void print_help()
 {
-    cout << "\nType +/- to change octave\nType s to autoload piano samples\nType d to toggle the damper\nType l to test sample loading\nType p to print the keyboard\nType h to print this help\nType n for nop\nType x to exit..";
+    cout << "\nType +/- to change octave\nType l/L to autoload test_key/Mellotron samples\nType d/D to damp test key/toggle the Mellotron damper\nType p to print the keyboard\nType h to print this help\nType x to exit..";
 }
 
 
@@ -70,21 +71,27 @@ int main()
             case '-':
                 octave--;
             break;
-            case 'd':
+            case 'D':
                 if(Mellotron.damperStatus())
                     Mellotron.damperOff();
                 else
                     cout << "\n" << Mellotron.damperOn() << " Keys damped..\n";
             break;
-            case 'n':
-                //nope
-            break;
             case 'l':
-                test_key.load_sample("Cello/G2.wav",0);
+                if(test_key.load_tape("Cello/G2.wav",0))
+                {
+                    test_key.align_head(0);
+                }
             break;
-            case 's':
-                cout << "\n" << Mellotron.load_sounds() << " sounds loaded..\n";         
+            case 'L':
+                cout << "\n" << Mellotron.load_tapes() << " sounds loaded..\n";         
                 break;
+           case 's':
+                test_key.strike(100);
+           break;
+           case 'd':
+                test_key.damp(true);
+           break;
             default:
                 Mellotron.keyStrikeByNote(tastiera[key_input] + to_string(octave),100);
                 system("sleep 4s");//simula durata nota

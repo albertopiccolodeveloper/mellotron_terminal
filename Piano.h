@@ -9,10 +9,14 @@ class Piano
         Piano(const unsigned int keys,std::string lowest_note,int lowest_octave);
         int load_sounds();
         int load_sounds(std::string sound_src,int channel);
-        int keyStrikeByNote(std::string note_name,unsigned int dynamic);
-        int keyStrikeByKeyN(int key_number,unsigned int dynamic);
+        int load_tapes();
+        int load_tapes(std::string sound_src,int channel);
+        int keyStrikeByNote(std::string note_name,float dynamic);
+        int keyStrikeByKeyN(int key_number,float dynamic);
         int keyReleaseByNote(std::string note_name);
         int keyReleaseByKeyN(int key_number);
+        void setTapeChannel(int channel_number);
+        int getTapeChannel();
         int damperOn();
         void damperOff();
         bool damperStatus();
@@ -24,7 +28,7 @@ class Piano
         bool damper;
         unsigned int general_volume;
         int key_n;
-        int sound_track;
+        int sound_channel;
 };
 
 
@@ -33,7 +37,7 @@ Piano::Piano(const unsigned int keys,std::string lowest_note,int lowest_octave)
 {
     this->key_n = keys;
     this->damper = true;
-    this->sound_track = 0;
+    this->sound_channel = 0;
 
     int d = 0;
     
@@ -65,12 +69,12 @@ Piano::Piano(const unsigned int keys,std::string lowest_note,int lowest_octave)
 
 }
 
-int Piano::keyStrikeByKeyN(int key_number,unsigned int dynamic)
+int Piano::keyStrikeByKeyN(int key_number,float dynamic)
 {
     return this->keyboard[key_number].strike(dynamic);
 }
 
-int Piano::keyStrikeByNote(std::string note_name,unsigned int dynamic)
+int Piano::keyStrikeByNote(std::string note_name,float dynamic)
 {
     try{
         return this->keyboard[this->keyboard_map.at(note_name)].strike(dynamic);
@@ -93,6 +97,20 @@ int Piano::keyReleaseByNote(std::string note_name)
         std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return -1;
     }
+}
+
+void Piano::setTapeChannel(int channel_number)
+{
+    this->sound_channel = channel_number % sound_channels_number;
+    for(int c=0; c < this->key_n; c++)
+    {
+        this->keyboard[c].align_head(this->sound_channel);
+    }
+}
+
+int Piano::getTapeChannel()
+{
+    return this->sound_channel;
 }
 
 void Piano::damperOff()
@@ -135,27 +153,43 @@ int Piano::load_sounds(std::string sound_src,int channel)
     return success;
 }
 
+int Piano::load_tapes()
+{
+    int success = 0;
+    for(int c=0;c<this->key_n;c++)
+        success+=this->keyboard[c].autoload_tape();
+
+    this->setTapeChannel(0);
+    return success;
+
+}
+
+int Piano::load_tapes(std::string sound_src,int channel)
+{
+    int success = 0;
+    for(int c=0;c<this->key_n;c++)
+        success+=this->keyboard[c].load_tape(sound_src,channel);
+    this->setTapeChannel(0);
+    return success;
+}
+
 
 
 void Piano::stampa_tastiera()
 {
     std::string temp_name;
-    unsigned long int mem_size = 0;
+    unsigned long long mem_size = 0;
     for(int c=0;c<this->key_n;c++)
     {
         temp_name = this->keyboard[c].note + std::to_string(this->keyboard[c].octave);
-        /*
-        if(temp_name.length() > 2){
-            std::cout << "#";
-        }
-        */
+
         mem_size += this->keyboard[c].getAllocatedMemory();
         std::cout << "Key"<< c << ": " << temp_name << "\n";
         //std::cout << "Key_Map[" << temp_name << "] : "<< this->keyboard_map[temp_name] << "\n";  
     }
 
     std::cout << "\nKeyboard sample memory allocated: " << mem_size << " Bytes";
-
+    std::cout << "\nTape Selected: " << this->sound_channel << "\n";
     std::cout << "\nDamper Status: " << (this->damper ? "normal" : "sustain") << "\n";
 }
 /////
