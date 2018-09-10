@@ -7,10 +7,8 @@ class Key
     public:
         Key();
         Key(const std::string note_name,int note_octave,std::string sample_src = "",int sound_channel = 0);
-        int autoload_sample(); //load automatico in base alla nota
-        int autoload_tape();
-        int load_sample(std::string sample_src,int sound_channel); //load con percorso forzato
-        int load_tape(std::string sample_src,int sound_channel);
+        int autoload_tape();//load automatico in base alla nota
+        int load_tape(std::string sample_src,int sound_channel);//load con percorso forzato
         void align_head(int channel);
         bool strike(float volume);
         bool release(bool damper);
@@ -19,12 +17,7 @@ class Key
         std::string note;
         int octave;
     private:
-        //da capire in che formato viene letto lo stream audio .wav
-        //in modo che sample[(int)sound_channel] corrisponda al sample giusto
-        //http://soundfile.sapp.org/doc/WaveFormat/
-        //tutti i sample sono MONO 16bit 44100hz
-        std::vector<double> sample[sound_channels_number];
-        //std::vector<sf::Int16> sample16bit[sound_channels_number];
+        //
         sf::Sound head;
         sf::SoundBuffer tape[sound_channels_number];
         unsigned int sample_rate[sound_channels_number];
@@ -111,7 +104,7 @@ bool Key::damp(bool damper)
 unsigned long long Key::getAllocatedMemory()
 {
     this->memory_allocated = 0;
-    
+
     for(int c = 0; c < sound_channels_number; c++)
     {
         this->memory_allocated += sizeof(this->tape[c]);
@@ -122,36 +115,7 @@ unsigned long long Key::getAllocatedMemory()
 }
 
 
-int Key::load_sample(std::string sample_src,int sound_channel)
-{
-    std::string path = "./samples/";
-    int channel = sound_channel % sound_channels_number;
 
-    AudioFile <double> audioIn;
-
-    if( audioIn.load(path + sample_src) )
-    {
-        //audioIn.printSummary();
-
-        this->sample_rate[channel] = audioIn.getSampleRate();
-        this->bit_depth[channel] = audioIn.getBitDepth();
-        this->sample_length[channel] = audioIn.getNumSamplesPerChannel();
-
-        try{    
-            this->sample[channel] = audioIn.samples[0];
-            this->memory_allocated = sizeof(std::vector<double>) + (sizeof(double) * this->sample[channel].size());
-        }catch(std::exception &exc){
-            std::cout << "\nError while allocating memory for sample/s.." << exc.what() << "\n";
-            return 0;
-        }
-
-        return 1;
-
-    }         
-    
-
-    return 0;
-}
 
 int Key::load_tape(std::string sample_src,int sound_channel)
 {
@@ -165,40 +129,6 @@ int Key::load_tape(std::string sample_src,int sound_channel)
     }
 
     return 1;
-}
-
-int Key::autoload_sample()
-{
-    bool cycle_exit = false;
-    int sounds_loaded = 0;
-    char sound = 'a';
-    std::string path = "";
-    std::string audio_filename = this->note + std::to_string(this->octave) + ".wav";
-    //
-
-    do{
-        switch(sound)
-        {
-            case 'a':
-                if(this->load_sample(path + "Cello/" + audio_filename,0))
-                    sounds_loaded++;
-                sound = 'b';
-            break;
-            case 'b':
-                if(this->load_sample(path + "Woodwinds/" + audio_filename,1))
-                    sounds_loaded++;
-                sound = 'c';
-            break;
-            case 'c':
-                if(this->load_sample(path + "Choir/" + audio_filename,2))
-                    sounds_loaded++;
-                cycle_exit = true;
-            break;
-        }
-
-    }while(!cycle_exit);
-
-    return sounds_loaded;
 }
 
 int Key::autoload_tape()

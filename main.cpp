@@ -1,33 +1,40 @@
 #include <iostream>
 #include <string>
 //utils
-#include "utils/AudioFile.h" //thank you Adam Stark https://github.com/adamstark/AudioFile
 #include <SFML/Audio.hpp>
-//Piano Class
+//Mellotron Class
 #include "Key.h"
-#include "Piano.h"
+#include "Mellotron.h"
 
 using namespace std;
 
 
 void print_help()
 {
-    cout << "\nType +/- to change octave\nType l/L to autoload test_key/Mellotron samples\nType d/D to damp test key/toggle the Mellotron damper\nType p to print the keyboard\nType h to print this help\nType x to exit..";
+    cout << "\nType +/- to change octave\nType s to switch between sounds\nType d to toggle the damper\nType a to release all the keys in current octave\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
+}
+
+void print_hello()
+{
+    cout << "\nMellotron emulator v1.0\nby Alberto Piccolo, 2018";
+    cout << endl;
 }
 
 
 int main()
 {
-    Piano Mellotron(35,"G",2);
-    Key test_key;
-    
+    print_hello();
+    //piano init
+    Mellotron M400(35,"G",2);
+    //load tapes
+    cout << "\nLoading tapes.. " << flush;
+    cout << M400.load_tapes() << " loaded." << endl; 
 
-    cout << "\nMellotron emulator v1.0\nby Alberto Piccolo, 2018\n\n";
 
     //loop for key_testing
     bool loop_continue = true;
     char key_input;
-    int octave = 2;
+    int octave = 3;
     int sound_channel = 0;
     //mappa per gli input di test da carattere
     unordered_map<char,string> tastiera;
@@ -45,13 +52,14 @@ int main()
     tastiera['u'] = "B";
     //
 
-    Mellotron.stampa_tastiera();
+    //M400.info();
     //
     print_help();
 
     do{
         cout << "\nCurrent octave: " << octave ;
-        cout << " - >>";
+        cout << "\nCurrent tape: " << M400.getTapeChannel() + 1;
+        cout << endl << ">>";
         cin >> key_input;
         
         switch(key_input)
@@ -60,7 +68,7 @@ int main()
                 loop_continue = false;
             break;
             case 'p':
-                Mellotron.stampa_tastiera();
+                M400.info();
             break;
             case 'h':
                 print_help();
@@ -71,31 +79,36 @@ int main()
             case '-':
                 octave--;
             break;
-            case 'D':
-                if(Mellotron.damperStatus())
-                    Mellotron.damperOff();
+            case 's':
+                M400.setTapeChannel(M400.getTapeChannel() + 1);
+            break;
+            case 'd':
+                if(M400.damperStatus())
+                    M400.damperOff();
                 else
-                    cout << "\n" << Mellotron.damperOn() << " Keys damped..\n";
+                    cout << "\n" << M400.damperOn() << " Keys damped..\n";
+            break;
+            case 'a':
+                M400.keyReleaseByNote(tastiera['q'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['2'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['w'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['3'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['e'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['r'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['5'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['t'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['6'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['y'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['7'] + to_string(octave));
+                M400.keyReleaseByNote(tastiera['u'] + to_string(octave));
             break;
             case 'l':
-                if(test_key.load_tape("Cello/G2.wav",0))
-                {
-                    test_key.align_head(0);
-                }
-            break;
-            case 'L':
-                cout << "\n" << Mellotron.load_tapes() << " sounds loaded..\n";         
+                cout << "\nnope.";       
                 break;
-           case 's':
-                test_key.strike(100);
-           break;
-           case 'd':
-                test_key.damp(true);
-           break;
             default:
-                Mellotron.keyStrikeByNote(tastiera[key_input] + to_string(octave),100);
-                system("sleep 4s");//simula durata nota
-                Mellotron.keyReleaseByNote(tastiera[key_input] + to_string(octave));
+                M400.keyStrikeByNote(tastiera[key_input] + to_string(octave),100);
+                //system("sleep 4s");//simula durata nota
+                //M400.keyReleaseByNote(tastiera[key_input] + to_string(octave));
         }
 
     }while(loop_continue);

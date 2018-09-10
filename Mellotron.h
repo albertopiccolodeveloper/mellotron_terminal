@@ -3,10 +3,10 @@
 const std::string key_note_names[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
  //fine variabili statiche
 //////////////////////////////////////////
-class Piano
+class Mellotron
 {
     public:
-        Piano(const unsigned int keys,std::string lowest_note,int lowest_octave);
+        Mellotron(const unsigned int keys,std::string lowest_note,int lowest_octave);
         int load_sounds();
         int load_sounds(std::string sound_src,int channel);
         int load_tapes();
@@ -20,11 +20,12 @@ class Piano
         int damperOn();
         void damperOff();
         bool damperStatus();
-        void stampa_tastiera();
+        void info();
     private:
-        Key keyboard[88];
-        std::unordered_map<std::string,int> keyboard_map;
+        Key keyboard[35];
+        //std::vector<Key> keyboard;
         //array associativo per accesso nome nota,numero tasto
+        std::unordered_map<std::string,int> keyboard_map;
         bool damper;
         unsigned int general_volume;
         int key_n;
@@ -32,8 +33,8 @@ class Piano
 };
 
 
-//metodi classe Piano
-Piano::Piano(const unsigned int keys,std::string lowest_note,int lowest_octave)
+//metodi classe Mellotron
+Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_octave)
 {
     this->key_n = keys;
     this->damper = true;
@@ -41,6 +42,7 @@ Piano::Piano(const unsigned int keys,std::string lowest_note,int lowest_octave)
 
     int d = 0;
     
+    //finds out with wich note has to start to enum keys
     for(int x=0;x<sizeof(key_note_names);x++)
     {
         if(key_note_names[x] == lowest_note)
@@ -48,6 +50,7 @@ Piano::Piano(const unsigned int keys,std::string lowest_note,int lowest_octave)
             d = x;
         }
     }
+    //
     
 
     Key temp; 
@@ -69,12 +72,12 @@ Piano::Piano(const unsigned int keys,std::string lowest_note,int lowest_octave)
 
 }
 
-int Piano::keyStrikeByKeyN(int key_number,float dynamic)
+int Mellotron::keyStrikeByKeyN(int key_number,float dynamic)
 {
     return this->keyboard[key_number].strike(dynamic);
 }
 
-int Piano::keyStrikeByNote(std::string note_name,float dynamic)
+int Mellotron::keyStrikeByNote(std::string note_name,float dynamic)
 {
     try{
         return this->keyboard[this->keyboard_map.at(note_name)].strike(dynamic);
@@ -84,12 +87,12 @@ int Piano::keyStrikeByNote(std::string note_name,float dynamic)
     }
 }
 
-int Piano::keyReleaseByKeyN(int key_number)
+int Mellotron::keyReleaseByKeyN(int key_number)
 {
     return this->keyboard[key_number].release(this->damper);
 }
 
-int Piano::keyReleaseByNote(std::string note_name)
+int Mellotron::keyReleaseByNote(std::string note_name)
 {
     try{
         return this->keyboard[this->keyboard_map.at(note_name)].release(this->damper);
@@ -99,7 +102,7 @@ int Piano::keyReleaseByNote(std::string note_name)
     }
 }
 
-void Piano::setTapeChannel(int channel_number)
+void Mellotron::setTapeChannel(int channel_number)
 {
     this->sound_channel = channel_number % sound_channels_number;
     for(int c=0; c < this->key_n; c++)
@@ -108,17 +111,17 @@ void Piano::setTapeChannel(int channel_number)
     }
 }
 
-int Piano::getTapeChannel()
+int Mellotron::getTapeChannel()
 {
     return this->sound_channel;
 }
 
-void Piano::damperOff()
+void Mellotron::damperOff()
 {
     this->damper = false;
 }
 
-int Piano::damperOn()
+int Mellotron::damperOn()
 {
     this->damper = true;
 
@@ -131,29 +134,12 @@ int Piano::damperOn()
     return x;
 }
 
-bool Piano::damperStatus()
+bool Mellotron::damperStatus()
 {
     return this->damper;
 }
 
-int Piano::load_sounds()
-{
-    int success = 0;
-    for(int c=0;c<this->key_n;c++)
-        success+=this->keyboard[c].autoload_sample();
-
-    return success;
-}
-
-int Piano::load_sounds(std::string sound_src,int channel)
-{
-    int success = 0;
-    for(int c=0;c<this->key_n;c++)
-        success+=this->keyboard[c].load_sample(sound_src,channel);
-    return success;
-}
-
-int Piano::load_tapes()
+int Mellotron::load_tapes()
 {
     int success = 0;
     for(int c=0;c<this->key_n;c++)
@@ -164,7 +150,7 @@ int Piano::load_tapes()
 
 }
 
-int Piano::load_tapes(std::string sound_src,int channel)
+int Mellotron::load_tapes(std::string sound_src,int channel)
 {
     int success = 0;
     for(int c=0;c<this->key_n;c++)
@@ -175,7 +161,7 @@ int Piano::load_tapes(std::string sound_src,int channel)
 
 
 
-void Piano::stampa_tastiera()
+void Mellotron::info()
 {
     std::string temp_name;
     unsigned long long mem_size = 0;
