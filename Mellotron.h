@@ -1,15 +1,15 @@
 #include <unordered_map>
 //
 const std::string key_note_names[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
+//definita poi nel main, da rivedere
+std::unordered_map<std::string,int> piano_models; 
  //fine variabili statiche
 //////////////////////////////////////////
 class Mellotron
 {
     public:
         Mellotron(const unsigned int keys,std::string lowest_note,int lowest_octave);
-        int load_sounds();
-        int load_sounds(std::string sound_src,int channel);
-        int load_tapes();
+        int load_tapes(std::string model = "M400");
         int load_tapes(std::string sound_src,int channel);
         int keyStrikeByNote(std::string note_name,float dynamic);
         int keyStrikeByKeyN(int key_number,float dynamic);
@@ -139,11 +139,11 @@ bool Mellotron::damperStatus()
     return this->damper;
 }
 
-int Mellotron::load_tapes()
+int Mellotron::load_tapes(std::string model)
 {
     int success = 0;
     for(int c=0;c<this->key_n;c++)
-        success+=this->keyboard[c].autoload_tape();
+        success+=this->keyboard[c].autoload_tape(piano_models.at(model));
 
     this->setTapeChannel(0);
     return success;

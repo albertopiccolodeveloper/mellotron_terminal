@@ -7,7 +7,8 @@ class Key
     public:
         Key();
         Key(const std::string note_name,int note_octave,std::string sample_src = "",int sound_channel = 0);
-        int autoload_tape();//load automatico in base alla nota
+        //int autoload_tape();//load automatico in base alla nota
+        int autoload_tape(int model = 0);//load automatico in base alla nota
         int load_tape(std::string sample_src,int sound_channel);//load con percorso forzato
         void align_head(int channel);
         bool strike(float volume);
@@ -130,37 +131,159 @@ int Key::load_tape(std::string sample_src,int sound_channel)
 
     return 1;
 }
-
+/*
 int Key::autoload_tape()
 {
     bool cycle_exit = false;
     int sounds_loaded = 0;
     char sound = 'a';
     std::string path = "";
-    std::string audio_filename = this->note + std::to_string(this->octave) + ".wav";
+    std::string audio_filename = "/" + this->note + std::to_string(this->octave) + ".wav";
     //
 
     do{
         switch(sound)
         {
             case 'a':
-                if(this->load_tape(path + "Cello/" + audio_filename,0))
+                if(this->load_tape(path + "Cello" + audio_filename,0))
                     sounds_loaded++;
                 sound = 'b';
             break;
             case 'b':
-                if(this->load_tape(path + "Woodwinds/" + audio_filename,1))
+                if(this->load_tape(path + "Woodwinds" + audio_filename,1))
                     sounds_loaded++;
                 sound = 'c';
             break;
             case 'c':
-                if(this->load_tape(path + "Choir/" + audio_filename,2))
+                if(this->load_tape(path + "Choir" + audio_filename,2))
                     sounds_loaded++;
                 cycle_exit = true;
             break;
         }
 
     }while(!cycle_exit);
+
+    return sounds_loaded;
+}
+*/
+
+int Key::autoload_tape(int model)
+{
+    bool cycle_exit = false;
+    int sounds_loaded = 0;
+    char sound = 'a';
+    std::string path = "";
+    std::string audio_filename = "/" + this->note + std::to_string(this->octave) + ".wav";
+    //
+    switch(model)
+    {
+        case 0:
+            //Mellotron M400 std preset
+            do{
+                switch(sound)
+                {
+                    case 'a':
+                        if(this->load_tape(path + "Cello" + audio_filename,0))
+                            sounds_loaded++;
+                        sound = 'b';
+                    break;
+                    case 'b':
+                        if(this->load_tape(path + "Woodwinds" + audio_filename,1))
+                            sounds_loaded++;
+                        sound = 'c';
+                    break;
+                    case 'c':
+                        if(this->load_tape(path + "Choir" + audio_filename,2))
+                            sounds_loaded++;
+                        cycle_exit = true;
+                    break;
+                }
+
+            }while(!cycle_exit);
+            //
+        break;
+        case 1:
+            //Mellotron MK II
+            do{
+                switch(sound)
+                {
+                    case 'a':
+                        if(this->load_tape(path + "MK2_Brass" + audio_filename,0))
+                            sounds_loaded++;
+                        sound = 'b';
+                    break;
+                    case 'b':
+                        if(this->load_tape(path + "MK2_Flute" + audio_filename,1))
+                            sounds_loaded++;
+                        sound = 'c';
+                    break;
+                    case 'c':
+                        if(this->load_tape(path + "MK2_Violins" + audio_filename,2))
+                            sounds_loaded++;
+                        cycle_exit = true;
+                    break;
+                }
+
+            }while(!cycle_exit);
+            //
+        break;
+        case 2:
+            //Mellotron M300
+            do{
+                switch(sound)
+                {
+                    case 'a':
+                        if(this->load_tape(path + "M300_Brass" + audio_filename,0))
+                            sounds_loaded++;
+                        sound = 'b';
+                    break;
+                    case 'b':
+                        if(this->load_tape(path + "M300A" + audio_filename,1))
+                            sounds_loaded++;
+                        sound = 'c';
+                    break;
+                    case 'c':
+                        if(this->load_tape(path + "M300B" + audio_filename,2))
+                            sounds_loaded++;
+                        cycle_exit = true;
+                    break;
+                }
+
+            }while(!cycle_exit);
+            //
+        break;
+        case 3:
+            //Mellotron ensemble sounds
+            do{
+                switch(sound)
+                {
+                    case 'a':
+                        if(this->load_tape(path + "Choir" + audio_filename,0))
+                            sounds_loaded++;
+                        sound = 'b';
+                    break;
+                    case 'b':
+                        if(this->load_tape(path + "String_Section" + audio_filename,1))
+                            sounds_loaded++;
+                        sound = 'c';
+                    break;
+                    case 'c':
+                        if(this->load_tape(path + "Woodwinds" + audio_filename,2))
+                            sounds_loaded++;
+                        cycle_exit = true;
+                    break;
+                }
+
+            }while(!cycle_exit);
+            //
+        break;
+        default:
+            std::cout << "\nPreset not found!";
+        break;
+    }
+
+    //presets end
+
 
     return sounds_loaded;
 }
