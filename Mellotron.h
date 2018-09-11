@@ -11,17 +11,25 @@ class Mellotron
 {
     public:
         Mellotron(const unsigned int keys,std::string lowest_note,int lowest_octave);
+        //
         int load_tapes(std::string model = "M400");
         int load_tapes(std::string sound_src,int channel);
+        //
         int keyStrikeByNote(std::string note_name,float dynamic);
         int keyStrikeByKeyN(int key_number,float dynamic);
+        int keyStrikeByMidiInterface(int midi_input,float dynamic);
+        //
         int keyReleaseByNote(std::string note_name);
         int keyReleaseByKeyN(int key_number);
+        int keyReleaseByMidiInterface(int midi_input);
+        //
         void setTapeChannel(int channel_number);
         int getTapeChannel();
+        //
         int damperOn();
         void damperOff();
         bool damperStatus();
+        //
         void info();
         //MIDI handlers
         int check_for_MIDI();
@@ -30,6 +38,7 @@ class Mellotron
         //std::vector<Key> keyboard;
         //array associativo per accesso nome nota,numero tasto
         std::unordered_map<std::string,int> keyboard_map;
+        std::unordered_map<int,int> midi_key_map;
         bool damper;
         unsigned int general_volume;
         int key_n;
@@ -62,20 +71,19 @@ Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_
     //
     
 
-    Key temp; 
-    //std::pair<std::string,int> temp_map_value;
+    Key temp;
+    int temp_midi_key = 0; 
+    //
     for(int c=0;c<keys;c++)
     {
         temp.note = key_note_names[d % 12];
         temp.octave = lowest_octave + (d / 12);
-        //inserimento nota
+        temp_midi_key = ((lowest_octave + (d / 12)) * 12) + (d % 12);
+        //note insert
         this->keyboard[c] = temp;
-        //
-        //temp_map_value.first = temp.note + std::to_string(temp.octave);
-        //temp_map_value.second = c;
-        //per poter accedere indipendentemente con il numero del tasto o con la nota
-        //this->keyboard_map.insert( temp_map_value );
+        //mapping
         this->keyboard_map[temp.note + std::to_string(temp.octave)] = c;
+        this->midi_key_map[temp_midi_key] = c;
         d++;
     }
 
@@ -96,6 +104,16 @@ int Mellotron::keyStrikeByNote(std::string note_name,float dynamic)
     }
 }
 
+int Mellotron::keyStrikeByMidiInterface(int midi_input,float dynamic)
+{
+    try{
+        return this->keyboard[this->midi_key_map.at(midi_input)].strike(dynamic);
+    }catch(const std::out_of_range& oor){
+        std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
+        return 0;
+    }
+}
+
 int Mellotron::keyReleaseByKeyN(int key_number)
 {
     return this->keyboard[key_number].release(this->damper);
@@ -108,6 +126,16 @@ int Mellotron::keyReleaseByNote(std::string note_name)
     }catch(const std::out_of_range& oor){
         std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return -1;
+    }
+}
+
+int Mellotron::keyReleaseByMidiInterface(int midi_input)
+{
+    try{
+        return this->keyboard[this->midi_key_map.at(midi_input)].release(this->damper);
+    }catch(const std::out_of_range& oor){
+        std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
+        return 0;
     }
 }
 
@@ -230,7 +258,7 @@ int Mellotron::check_for_MIDI()
     //open device
     try {
         this->midiin->openPort( device_port );
-        this->midiin->setCallback( & this->MIDIreadCallback );
+        this->midiin->setCallback( & this->MIDIreadCallback,(void *)this );
     }
     catch ( RtMidiError &error ) {
         error.printMessage();
@@ -243,11 +271,33 @@ int Mellotron::check_for_MIDI()
     return device_port;
 }
 
-void Mellotron::MIDIreadCallback( double deltatime, std::vector< unsigned char > *message,void *userData)
+void Mellotron::MIDIreadCallback(double deltatime, std::vector< unsigned char > *message,void *userData)
 {
     unsigned int nBytes = message->size();
     for ( unsigned int i=0; i<nBytes; i++ )
         std::cout << "Byte " << i << " = " << (int)message->at(i) << ", ";
     if ( nBytes > 0 )
         std::cout << "stamp = " << deltatime << std::endl;
+
+    //(void *) is a generic pointer, to read data cast is needed (without creating real object) 
+    Mellotron *pInstrument = static_cast<Mellotron *>(userData);
+    
+
+    if(nBytes > 0){
+        switch((int)message->at(0))
+        {
+            case 144:
+                //note hit
+                if((int) message->at(2) > 0)
+                    pInstrument->keyStrikeByMidiInterface((int)message->at(1),(int)message->at(2));
+                else    
+                    pInstrument->keyReleaseByMidiInterface((int)message->at(1));
+            break;
+            case 176:
+                //damper
+                
+            break;
+        }
+    }
+
 }
