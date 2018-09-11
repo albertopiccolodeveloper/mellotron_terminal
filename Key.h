@@ -1,3 +1,4 @@
+#include <SFML/Audio.hpp>
 //static variables
 //Mellotron M400 has 3 sample for each key
 const int sound_channels_number = 3;//

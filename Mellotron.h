@@ -1,6 +1,6 @@
 #include <unordered_map>
 #include "utils/RtMidi.h"
-
+#include "Key.h"
 //
 const std::string key_note_names[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 //definita poi nel main, da rivedere
@@ -36,6 +36,8 @@ class Mellotron
         int sound_channel;
         //MIDI data
         RtMidiIn *midiin;
+        //MIDI callback
+        static void MIDIreadCallback(double deltatime, std::vector< unsigned char > *message,void *userData);
 };
 
 
@@ -222,12 +224,13 @@ int Mellotron::check_for_MIDI()
     unsigned int device_port = 0;
     if(nPorts > 1)
     {
-        cout << "\nChoose port number to use ( 0 to " << nPorts - 1 << " ): ";
-        cin >> device_port;
+        std::cout << "\nChoose port number to use ( 0 to " << nPorts - 1 << " ): ";
+        std::cin >> device_port;
     }
     //open device
     try {
         this->midiin->openPort( device_port );
+        this->midiin->setCallback( & this->MIDIreadCallback );
     }
     catch ( RtMidiError &error ) {
         error.printMessage();
@@ -235,7 +238,16 @@ int Mellotron::check_for_MIDI()
         return -1;
     }
     //
-    std::cout << "\n\nReading MIDI from port #" << device_port << ": " << this->midiin->getPortName() << endl;
+    std::cout << "\n\nReading MIDI from port #" << device_port << ": " << this->midiin->getPortName() << std::endl;
     //
     return device_port;
+}
+
+void Mellotron::MIDIreadCallback( double deltatime, std::vector< unsigned char > *message,void *userData)
+{
+    unsigned int nBytes = message->size();
+    for ( unsigned int i=0; i<nBytes; i++ )
+        std::cout << "Byte " << i << " = " << (int)message->at(i) << ", ";
+    if ( nBytes > 0 )
+        std::cout << "stamp = " << deltatime << std::endl;
 }

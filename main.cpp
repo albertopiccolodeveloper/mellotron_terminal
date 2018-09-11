@@ -1,18 +1,19 @@
 #include <iostream>
 #include <string>
+#include <signal.h>
 #include <fstream>
-//utils
-#include <SFML/Audio.hpp>
 //Mellotron Class
-#include "Key.h"
 #include "Mellotron.h"
 
 using namespace std;
 
+bool exit_cycle;
+static void finish(int){ exit_cycle = true; }
+
 
 void print_help()
 {
-    cout << "\nType +/- to change octave\nType s to switch between sounds\nType d to toggle the damper\nType a to release all the keys in current octave\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
+    cout << "\nType +/- to change volume\nType 1,2,3 to switch between sounds\nType m to scan for MIDI devices\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType Ctrl + C to exit.." << endl;
 }
 
 void print_hello()
@@ -58,29 +59,19 @@ int main()
     Mellotron.check_for_MIDI();
     cout << endl;
 
+    // Install an interrupt handler function.(SIGINT = Ctrl + C)
+    exit_cycle = false;
+    (void) signal(SIGINT, finish);
+    //
 
     //loop for key_testing
-    bool loop_continue = true;
     string sound_src = "";
     string preset;
     int channel_new_sound = 0;
     char key_input;
     int octave = 3;
     int sound_channel = 0;
-    //mappa per gli input di test da carattere
-    unordered_map<char,string> tastiera;
-    tastiera['q'] = "C";
-    tastiera['2'] = "C#";
-    tastiera['w'] = "D";
-    tastiera['3'] = "D#";
-    tastiera['e'] = "E";
-    tastiera['r'] = "F";
-    tastiera['5'] = "F#";
-    tastiera['t'] = "G";
-    tastiera['6'] = "G#";
-    tastiera['y'] = "A";
-    tastiera['7'] = "A#";
-    tastiera['u'] = "B";
+    float volume = 100;
     //
 
     //Mellotron.info();
@@ -88,59 +79,47 @@ int main()
     print_help();
 
     do{
-        cout << "\nCurrent octave: " << octave ;
         cout << "\nCurrent tape: " << Mellotron.getTapeChannel();
         cout << endl << ">>";
         cin >> key_input;
         
         switch(key_input)
         {
-            case 'x':
-                loop_continue = false;
-            break;
             case 'p':
                 Mellotron.info();
             break;
             case 'h':
                 print_help();
             break;
+            case 'm':
+                cout << "\nChecking for MIDI input.. " << flush;
+                Mellotron.check_for_MIDI();
+                cout << endl;
+            break;
             case '+':
-                octave++;
+                //raise volume
+                
             break;
             case '-':
-                octave--;
+                //lower volume
             break;
-            case 's':
-                Mellotron.setTapeChannel(Mellotron.getTapeChannel() + 1);
+            case '1':
+                Mellotron.setTapeChannel(0);
             break;
-            case 'd':
-                if(Mellotron.damperStatus())
-                    Mellotron.damperOff();
-                else
-                    cout << "\n" << Mellotron.damperOn() << " Keys damped..\n";
+            case '2':
+                Mellotron.setTapeChannel(1);
             break;
-            case 'a':
-                Mellotron.keyReleaseByNote(tastiera['q'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['2'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['w'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['3'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['e'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['r'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['5'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['t'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['6'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['y'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['7'] + to_string(octave));
-                Mellotron.keyReleaseByNote(tastiera['u'] + to_string(octave));
+            case '3':
+                Mellotron.setTapeChannel(2);
             break;
             case 'L':
                 cout << "\nChoose sound and channel:\n";
                 cout << "\nSound Path (relative to samples folder) >>";
                 cin >> sound_src;
-                cout << "\nTape Channel (0,1,2) >>";
+                cout << "\nTape Channel (1,2,3) >>";
                 cin >> channel_new_sound;
                 cout << "\nLoading tapes.. " << flush;
-                cout << Mellotron.load_tapes(sound_src,channel_new_sound) << " sounds loaded.";
+                cout << Mellotron.load_tapes(sound_src,channel_new_sound - 1) << " sounds loaded.";
                 break;
             case 'l':
                 cout << "\nChoose Mellotron Preset: ( M400 , MKII , M300 , ensemble ) >>";
@@ -149,10 +128,12 @@ int main()
                 cout << Mellotron.load_tapes(preset) << " sounds loaded.";
             break;
             default:
-                Mellotron.keyStrikeByNote(tastiera[key_input] + to_string(octave),100);
+                //nope
+                cout << "\nNo command found..";
+                print_help();
         }
 
-    }while(loop_continue);
+    }while(!exit_cycle);
 
     return 0;
 }
