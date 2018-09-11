@@ -19,6 +19,7 @@ void print_hello()
 {
     string line;
     ifstream file("misc/splash_screen.txt"); 
+    cout << "\n";
     if( file.is_open() )
     {
         while(!file.eof())
@@ -52,6 +53,10 @@ int main()
     //load std tapes
     cout << "\nLoading tapes.. " << flush;
     cout << Mellotron.load_tapes("M400") << " loaded." << endl;
+    //check for MIDI
+    cout << "\nChecking for MIDI input.. " << flush;
+    Mellotron.check_for_MIDI();
+    cout << endl;
 
 
     //loop for key_testing

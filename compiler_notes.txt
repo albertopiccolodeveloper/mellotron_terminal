@@ -9,4 +9,7 @@ command line -> $ clang++ -std=c++11 -o mellotron main.cpp ./utils/AudioFile.cpp
 #requires to manually copy the content of SFML package SFML/Frameworks AND SFML/extlibs to /Library/Frameworks
 command line -> $ clang++ -framework SFML -framework SFML-audio -o mellotron main.cpp
 
+11/9/2018
+#requires to manually copy the content of SFML package SFML/Frameworks AND SFML/extlibs to /Library/Frameworks
+command line -> $ clang++ -D__MACOSX_CORE__ -framework SFML -framework SFML-audio -o mellotron main.cpp ./utils/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation	
 */

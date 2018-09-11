@@ -1,4 +1,6 @@
 #include <unordered_map>
+#include "utils/RtMidi.h"
+
 //
 const std::string key_note_names[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 //definita poi nel main, da rivedere
@@ -21,6 +23,8 @@ class Mellotron
         void damperOff();
         bool damperStatus();
         void info();
+        //MIDI handlers
+        int check_for_MIDI();
     private:
         Key keyboard[35];
         //std::vector<Key> keyboard;
@@ -30,6 +34,8 @@ class Mellotron
         unsigned int general_volume;
         int key_n;
         int sound_channel;
+        //MIDI data
+        RtMidiIn *midiin;
 };
 
 
@@ -39,6 +45,7 @@ Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_
     this->key_n = keys;
     this->damper = true;
     this->sound_channel = 0;
+    this->midiin = 0;
 
     int d = 0;
     
@@ -179,3 +186,56 @@ void Mellotron::info()
     std::cout << "\nDamper Status: " << (this->damper ? "normal" : "sustain") << "\n";
 }
 /////
+//MIDI HANDLERS
+int Mellotron::check_for_MIDI()
+{
+    // RtMidiIn constructor
+    try {
+        this->midiin = new RtMidiIn();
+    }
+    catch ( RtMidiError &error ) {
+        error.printMessage();
+        exit( EXIT_FAILURE );
+    }
+
+    // Check inputs and print available devices
+    unsigned int nPorts = midiin->getPortCount();
+    std::cout << "\nThere are " << nPorts << " MIDI input sources available.\n";
+    std::string portName;
+    if(nPorts > 0){
+        for ( unsigned int i=0; i<nPorts; i++ ) {
+            try {
+                portName = midiin->getPortName(i);
+            }
+            catch ( RtMidiError &error ) {
+                error.printMessage();
+                delete this->midiin;
+                return -1;
+            }
+            std::cout << "\nPort #" << i << ": " << portName;
+        }
+    }else{
+        delete this->midiin;
+        return -1;
+    }
+    //choose device port
+    unsigned int device_port = 0;
+    if(nPorts > 1)
+    {
+        cout << "\nChoose port number to use ( 0 to " << nPorts - 1 << " ): ";
+        cin >> device_port;
+    }
+    //open device
+    try {
+        this->midiin->openPort( device_port );
+    }
+    catch ( RtMidiError &error ) {
+        error.printMessage();
+        delete this->midiin;
+        return -1;
+    }
+    //
+    std::cout << "\n\nReading MIDI from port #" << device_port << ": " << this->midiin->getPortName() << endl;
+    //
+    return device_port;
+}
