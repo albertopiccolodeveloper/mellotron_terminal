@@ -11,6 +11,7 @@ class Mellotron
 {
     public:
         Mellotron(const unsigned int keys,std::string lowest_note,int lowest_octave);
+        ~Mellotron();
         //
         int load_tapes(std::string model = "M400");
         int load_tapes(std::string sound_src,int channel);
@@ -30,6 +31,10 @@ class Mellotron
         void damperOff();
         bool damperStatus();
         //
+        void raiseVolume();
+        void lowerVolume();
+        unsigned int getVolume();
+        //
         void info();
         //MIDI handlers
         int check_for_MIDI();
@@ -41,6 +46,7 @@ class Mellotron
         std::unordered_map<int,int> midi_key_map;
         bool damper;
         unsigned int general_volume;
+        float pitch;
         int key_n;
         int sound_channel;
         //MIDI data
@@ -57,6 +63,8 @@ Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_
     this->damper = true;
     this->sound_channel = 0;
     this->midiin = 0;
+    this->general_volume = 70;
+    this->pitch = 0.00;
 
     int d = 0;
     
@@ -99,7 +107,7 @@ int Mellotron::keyStrikeByNote(std::string note_name,float dynamic)
     try{
         return this->keyboard[this->keyboard_map.at(note_name)].strike(dynamic);
     }catch(const std::out_of_range& oor){
-        std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
+        //std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return 0;
     }
 }
@@ -109,7 +117,7 @@ int Mellotron::keyStrikeByMidiInterface(int midi_input,float dynamic)
     try{
         return this->keyboard[this->midi_key_map.at(midi_input)].strike(dynamic);
     }catch(const std::out_of_range& oor){
-        std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
+        //std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return 0;
     }
 }
@@ -124,7 +132,7 @@ int Mellotron::keyReleaseByNote(std::string note_name)
     try{
         return this->keyboard[this->keyboard_map.at(note_name)].release(this->damper);
     }catch(const std::out_of_range& oor){
-        std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
+        //std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return -1;
     }
 }
@@ -134,7 +142,7 @@ int Mellotron::keyReleaseByMidiInterface(int midi_input)
     try{
         return this->keyboard[this->midi_key_map.at(midi_input)].release(this->damper);
     }catch(const std::out_of_range& oor){
-        std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
+        //std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return 0;
     }
 }
@@ -196,24 +204,56 @@ int Mellotron::load_tapes(std::string sound_src,int channel)
     return success;
 }
 
+void Mellotron::raiseVolume()
+{
+    if(this->general_volume < 100)
+        this->general_volume += 10;
+}
+
+void Mellotron::lowerVolume()
+{
+    if(this->general_volume > 0)
+        this->general_volume -= 10;
+}
+
+unsigned int Mellotron::getVolume()
+{
+    return this->general_volume;
+}
+
 
 
 void Mellotron::info()
 {
     std::string temp_name;
     unsigned long long mem_size = 0;
+
+    int d = 0;
+    
+    //finds out with wich note has to start to enum keys
+    for(int x=0;x<sizeof(key_note_names);x++)
+    {
+        if(key_note_names[x] == this->keyboard[0].note)
+        {
+            d = x;
+        }
+    }
+    //
+
     for(int c=0;c<this->key_n;c++)
     {
         temp_name = this->keyboard[c].note + std::to_string(this->keyboard[c].octave);
 
         mem_size += this->keyboard[c].getAllocatedMemory();
         std::cout << "Key"<< c << ": " << temp_name << "\n";
-        //std::cout << "Key_Map[" << temp_name << "] : "<< this->keyboard_map[temp_name] << "\n";  
+        std::cout << "Key_Map[" << temp_name << "] : "<< this->keyboard_map[temp_name] << "\n";
+        std::cout << "MIDI_Map[" << d << "] : "<< this->midi_key_map.at(d) << "\n";  
+        d++;
     }
 
     std::cout << "\nKeyboard sample memory allocated: " << mem_size << " Bytes";
-    std::cout << "\nTape Selected: " << this->sound_channel << "\n";
-    std::cout << "\nDamper Status: " << (this->damper ? "normal" : "sustain") << "\n";
+    std::cout << "\nTape Selected: " << this->sound_channel + 1 << "\n";
+    //std::cout << "\nDamper Status: " << (this->damper ? "normal" : "sustain") << "\n";
 }
 /////
 //MIDI HANDLERS
@@ -273,13 +313,16 @@ int Mellotron::check_for_MIDI()
 
 void Mellotron::MIDIreadCallback(double deltatime, std::vector< unsigned char > *message,void *userData)
 {
+    
     unsigned int nBytes = message->size();
+    /*
     for ( unsigned int i=0; i<nBytes; i++ )
         std::cout << "Byte " << i << " = " << (int)message->at(i) << ", ";
     if ( nBytes > 0 )
         std::cout << "stamp = " << deltatime << std::endl;
+    */
 
-    //(void *) is a generic pointer, to read data cast is needed (without creating real object) 
+    //(void *) is a generic pointer, to read data, cast is needed (without creating real object) 
     Mellotron *pInstrument = static_cast<Mellotron *>(userData);
     
 
@@ -289,7 +332,7 @@ void Mellotron::MIDIreadCallback(double deltatime, std::vector< unsigned char > 
             case 144:
                 //note hit
                 if((int) message->at(2) > 0)
-                    pInstrument->keyStrikeByMidiInterface((int)message->at(1),(int)message->at(2));
+                    pInstrument->keyStrikeByMidiInterface((int)message->at(1),pInstrument->general_volume);
                 else    
                     pInstrument->keyReleaseByMidiInterface((int)message->at(1));
             break;
@@ -300,4 +343,15 @@ void Mellotron::MIDIreadCallback(double deltatime, std::vector< unsigned char > 
         }
     }
 
+}
+
+//destructor
+Mellotron::~Mellotron()
+{
+    if(this->midiin != 0){
+        this->midiin->closePort();
+        this->midiin->~RtMidiIn();
+    }
+    //
+    std::cout << "\nMellotron succesfully shut-down!\n\n" << std::endl;
 }

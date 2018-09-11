@@ -1,4 +1,5 @@
 #include <SFML/Audio.hpp>
+#include <SFML/System/Time.hpp>
 //static variables
 //Mellotron M400 has 3 sample for each key
 const int sound_channels_number = 3;//
@@ -8,23 +9,25 @@ class Key
     public:
         Key();
         Key(const std::string note_name,int note_octave,std::string sample_src = "",int sound_channel = 0);
-        //int autoload_tape();//load automatico in base alla nota
+        ~Key();
+        //
         int autoload_tape(int model = 0);//load automatico in base alla nota
         int load_tape(std::string sample_src,int sound_channel);//load con percorso forzato
         void align_head(int channel);
+        //
         bool strike(float volume);
         bool release(bool damper);
         bool damp(bool damper);
+        //
         unsigned long long getAllocatedMemory();
+        //public data
         std::string note;
         int octave;
     private:
-        //
+        //sound variables
         sf::Sound head;
         sf::SoundBuffer tape[sound_channels_number];
-        unsigned int sample_rate[sound_channels_number];
-        unsigned int bit_depth[sound_channels_number];
-        unsigned long int sample_length[sound_channels_number]; 
+        //logic variables
         bool pressed;
         //
         unsigned long long memory_allocated;
@@ -39,12 +42,6 @@ Key::Key()
     this->pressed = false;
     this->memory_allocated = 0;
     //init samples
-    for(int c=0;c<sound_channels_number;c++)
-    {
-        this->sample_length[c] = 0;
-        this->bit_depth[c] = 0;
-        this->sample_rate[c] = 0;
-    }
 }
 
 Key::Key(const std::string note_name,int note_octave,std::string sample_src,int sound_channel)
@@ -75,7 +72,7 @@ bool Key::strike(float volume)
         return false;
     else{
         this->pressed = true;
-        std::cout << "\n" << this->note << this->octave << " Key stroke!\n";
+        //std::cout << "\n" << this->note << this->octave << " Key stroke!\n";
         //start playing tape
         this->head.setVolume(volume);
         this->head.play();
@@ -94,8 +91,16 @@ bool Key::damp(bool damper)
 {
     if(!this->pressed && damper){
         //stop playing tape and rewind
-        this->head.stop();
-        std::cout << "\n" << this->note << this->octave << " Key damped!\n";
+        this->head.setVolume(5);
+        this->head.setVolume(4);
+        this->head.setVolume(3);
+        this->head.setVolume(2);
+        this->head.setVolume(1);
+        this->head.setVolume(0);
+        //this->head.stop();
+        this->head.pause();
+        this->head.setPlayingOffset(sf::Time::Zero);
+        //std::cout << "\n" << this->note << this->octave << " Key damped!\n";
 
         return true;
     }
@@ -117,8 +122,6 @@ unsigned long long Key::getAllocatedMemory()
 }
 
 
-
-
 int Key::load_tape(std::string sample_src,int sound_channel)
 {
     std::string path = "./samples/";
@@ -132,41 +135,6 @@ int Key::load_tape(std::string sample_src,int sound_channel)
 
     return 1;
 }
-/*
-int Key::autoload_tape()
-{
-    bool cycle_exit = false;
-    int sounds_loaded = 0;
-    char sound = 'a';
-    std::string path = "";
-    std::string audio_filename = "/" + this->note + std::to_string(this->octave) + ".wav";
-    //
-
-    do{
-        switch(sound)
-        {
-            case 'a':
-                if(this->load_tape(path + "Cello" + audio_filename,0))
-                    sounds_loaded++;
-                sound = 'b';
-            break;
-            case 'b':
-                if(this->load_tape(path + "Woodwinds" + audio_filename,1))
-                    sounds_loaded++;
-                sound = 'c';
-            break;
-            case 'c':
-                if(this->load_tape(path + "Choir" + audio_filename,2))
-                    sounds_loaded++;
-                cycle_exit = true;
-            break;
-        }
-
-    }while(!cycle_exit);
-
-    return sounds_loaded;
-}
-*/
 
 int Key::autoload_tape(int model)
 {
@@ -184,17 +152,17 @@ int Key::autoload_tape(int model)
                 switch(sound)
                 {
                     case 'a':
-                        if(this->load_tape(path + "Cello" + audio_filename,0))
+                        if(this->load_tape(path + "MK2_Flute" + audio_filename,0))
                             sounds_loaded++;
                         sound = 'b';
                     break;
                     case 'b':
-                        if(this->load_tape(path + "Woodwinds" + audio_filename,1))
+                        if(this->load_tape(path + "String_Section" + audio_filename,1))
                             sounds_loaded++;
                         sound = 'c';
                     break;
                     case 'c':
-                        if(this->load_tape(path + "Choir" + audio_filename,2))
+                        if(this->load_tape(path + "Cello" + audio_filename,2))
                             sounds_loaded++;
                         cycle_exit = true;
                     break;
@@ -209,17 +177,17 @@ int Key::autoload_tape(int model)
                 switch(sound)
                 {
                     case 'a':
-                        if(this->load_tape(path + "MK2_Brass" + audio_filename,0))
+                        if(this->load_tape(path + "MK2_Flute" + audio_filename,0))
                             sounds_loaded++;
                         sound = 'b';
                     break;
                     case 'b':
-                        if(this->load_tape(path + "MK2_Flute" + audio_filename,1))
+                        if(this->load_tape(path + "MK2_Violins" + audio_filename,1))
                             sounds_loaded++;
                         sound = 'c';
                     break;
                     case 'c':
-                        if(this->load_tape(path + "MK2_Violins" + audio_filename,2))
+                        if(this->load_tape(path + "MK2_Brass" + audio_filename,2))
                             sounds_loaded++;
                         cycle_exit = true;
                     break;
@@ -234,17 +202,17 @@ int Key::autoload_tape(int model)
                 switch(sound)
                 {
                     case 'a':
-                        if(this->load_tape(path + "M300_Brass" + audio_filename,0))
+                        if(this->load_tape(path + "M300A" + audio_filename,0))
                             sounds_loaded++;
                         sound = 'b';
                     break;
                     case 'b':
-                        if(this->load_tape(path + "M300A" + audio_filename,1))
+                        if(this->load_tape(path + "M300B" + audio_filename,1))
                             sounds_loaded++;
                         sound = 'c';
                     break;
                     case 'c':
-                        if(this->load_tape(path + "M300B" + audio_filename,2))
+                        if(this->load_tape(path + "M300_Brass" + audio_filename,2))
                             sounds_loaded++;
                         cycle_exit = true;
                     break;
@@ -259,7 +227,7 @@ int Key::autoload_tape(int model)
                 switch(sound)
                 {
                     case 'a':
-                        if(this->load_tape(path + "Choir" + audio_filename,0))
+                        if(this->load_tape(path + "Woodwinds" + audio_filename,0))
                             sounds_loaded++;
                         sound = 'b';
                     break;
@@ -269,7 +237,7 @@ int Key::autoload_tape(int model)
                         sound = 'c';
                     break;
                     case 'c':
-                        if(this->load_tape(path + "Woodwinds" + audio_filename,2))
+                        if(this->load_tape(path + "Choir" + audio_filename,2))
                             sounds_loaded++;
                         cycle_exit = true;
                     break;
@@ -288,4 +256,11 @@ int Key::autoload_tape(int model)
 
     return sounds_loaded;
 }
-//
+//destructor
+Key::~Key()
+{
+    /*
+    this->head.stop();
+    this->head.~Sound();
+    */
+}
