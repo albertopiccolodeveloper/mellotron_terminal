@@ -98,11 +98,12 @@ bool Key::damp(bool damper)
         //this->head.setVolume(0);
         //fast fadeout (to avoid clicking)
         float fade = this->head.getVolume();
+        float attenuation = fade / 1000;
         while(fade > 0)
         {
             this->head.setVolume(fade);
-            fade -= 1.00;
-            sf::sleep(sf::microseconds(200));
+            fade -= attenuation;
+            sf::sleep(sf::microseconds(25));
         }
         //sf::Time offset = sf::seconds(0.2);
         //this->head.setPlayingOffset(this->length[this->tape_channel] - offset);
