@@ -88,7 +88,8 @@ Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_
         temp.octave = lowest_octave + (d / 12);
         temp_midi_key = ((lowest_octave + (d / 12)) * 12) + (d % 12);
         //note insert
-        this->keyboard[c] = temp;
+        this->keyboard[c].note = temp.note;
+        this->keyboard[c].octave = temp.octave;
         //mapping
         this->keyboard_map[temp.note + std::to_string(temp.octave)] = c;
         this->midi_key_map[temp_midi_key] = c;
