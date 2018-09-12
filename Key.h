@@ -91,15 +91,11 @@ bool Key::damp(bool damper)
 {
     if(!this->pressed && damper){
         //stop playing tape and rewind
-        this->head.setVolume(5);
-        this->head.setVolume(4);
-        this->head.setVolume(3);
-        this->head.setVolume(2);
-        this->head.setVolume(1);
         this->head.setVolume(0);
-        //this->head.stop();
         this->head.pause();
         this->head.setPlayingOffset(sf::Time::Zero);
+        //this->head.stop();
+        
         //std::cout << "\n" << this->note << this->octave << " Key damped!\n";
 
         return true;

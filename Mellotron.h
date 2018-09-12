@@ -239,7 +239,8 @@ void Mellotron::info()
         }
     }
     //
-
+    d = (d + (12 * this->keyboard[0].octave ) );
+    //
     for(int c=0;c<this->key_n;c++)
     {
         temp_name = this->keyboard[c].note + std::to_string(this->keyboard[c].octave);
@@ -247,7 +248,8 @@ void Mellotron::info()
         mem_size += this->keyboard[c].getAllocatedMemory();
         std::cout << "Key"<< c << ": " << temp_name << "\n";
         std::cout << "Key_Map[" << temp_name << "] : "<< this->keyboard_map[temp_name] << "\n";
-        std::cout << "MIDI_Map[" << d << "] : "<< this->midi_key_map.at(d) << "\n";  
+        std::cout << "MIDI_Map[" << d << "] : "<< this->midi_key_map.at(d) << "\n";
+        std::cout << "\n";
         d++;
     }
 
