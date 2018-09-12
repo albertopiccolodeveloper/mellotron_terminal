@@ -1,5 +1,4 @@
-#include <SFML/Audio.hpp>
-#include <SFML/System/Time.hpp>
+#include <irrKlang/irrKlang.h>
 //static variables
 //Mellotron M400 has 3 sample for each key
 const int sound_channels_number = 3;//
@@ -15,7 +14,7 @@ class Key
         int load_tape(std::string sample_src,int sound_channel);//load con percorso forzato
         void align_head(int channel);
         //
-        bool strike(float volume);
+        irrklang::ISound * strike(float volume);
         bool release(bool damper);
         bool damp(bool damper);
         //
@@ -25,10 +24,12 @@ class Key
         int octave;
     private:
         //sound variables
-        sf::Sound head;
-        sf::SoundBuffer tape[sound_channels_number];
+        //sf::Sound head;
+        irrklang::ISound * tape[sound_channels_number];
+        //sf::SoundBuffer tape[sound_channels_number];
         //logic variables
         bool pressed;
+        int tape_channel;
         //
         unsigned long long memory_allocated;
 };
@@ -60,24 +61,27 @@ Key::Key(const std::string note_name,int note_octave,std::string sample_src,int 
 
 void Key::align_head(int channel)
 {
-    this->head.stop();
-    this->head.setBuffer(this->tape[channel]);
+    //this->head.stop();
+    //this->head.setBuffer(this->tape[channel]);
+    this->tape_channel = channel;
 }
 
 
 
-bool Key::strike(float volume)
+irrklang::ISound * Key::strike(float volume)
 {
     if(this->pressed)
-        return false;
+        return 0;
     else{
         this->pressed = true;
         //std::cout << "\n" << this->note << this->octave << " Key stroke!\n";
         //start playing tape
-        this->head.setVolume(volume);
-        this->head.play();
+        //this->head.setVolume(volume);
+        //this->head.play();
+        this->tape[this->tape_channel]->setVolume(volume);
+        
     }
-    return this->pressed;
+    return this->tape[this->tape_channel];
 }
 
 bool Key::release(bool damper)
@@ -91,10 +95,12 @@ bool Key::damp(bool damper)
 {
     if(!this->pressed && damper){
         //stop playing tape and rewind
-        this->head.setVolume(0);
-        this->head.pause();
-        this->head.setPlayingOffset(sf::Time::Zero);
+        //this->head.setVolume(0);
+        //this->head.pause();
+        //this->head.setPlayingOffset(sf::Time::Zero);
         //this->head.stop();
+        this->tape[this->tape_channel]->setIsPaused();
+        this->tape[this->tape_channel]->setPlayPosition(0);
         
         //std::cout << "\n" << this->note << this->octave << " Key damped!\n";
 
@@ -111,23 +117,32 @@ unsigned long long Key::getAllocatedMemory()
     for(int c = 0; c < sound_channels_number; c++)
     {
         this->memory_allocated += sizeof(this->tape[c]);
-        this->memory_allocated += sizeof(sf::Int16) * this->tape[c].getSampleCount();
+        //this->memory_allocated += sizeof(sf::Int16) * this->tape[c].getSampleCount();
     }
 
     return this->memory_allocated;
 }
 
 
-int Key::load_tape(std::string sample_src,int sound_channel)
+int Key::load_tape(irrklang::ISound * pSound,int channel)
 {
-    std::string path = "./samples/";
-    int channel = sound_channel % sound_channels_number;
+    
 
+    /*
     if( !this->tape[channel].loadFromFile(path + sample_src) )
     {
         std::cout << "\nBuffer not loaded..";
         return 0;
     }
+    */
+
+   if( !pSound )
+   {
+        std::cout << "\nBuffer not loaded..";
+        return 0;
+   }
+
+   this->tape[channel] = pSound;
 
     return 1;
 }

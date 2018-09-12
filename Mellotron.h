@@ -40,6 +40,8 @@ class Mellotron
         int check_for_MIDI();
     private:
         Key keyboard[35];
+        //
+        irrklang::ISoundEngine * engine;
         //std::vector<Key> keyboard;
         //array associativo per accesso nome nota,numero tasto
         std::unordered_map<std::string,int> keyboard_map;
@@ -195,11 +197,17 @@ int Mellotron::load_tapes(std::string model)
 
 }
 
-int Mellotron::load_tapes(std::string sound_src,int channel)
+int Mellotron::load_tapes(std::string sound_src,int sound_channel)
 {
     int success = 0;
+
+    std::string path = "./samples/" + sound_src;
+
+
+    int channel = sound_channel % sound_channels_number;
+
     for(int c=0;c<this->key_n;c++)
-        success+=this->keyboard[c].load_tape(sound_src,channel);
+        success+=this->keyboard[c].load_tape(this->engine->addSoundSourceFromFile(path),channel);
     this->setTapeChannel(0);
     return success;
 }
