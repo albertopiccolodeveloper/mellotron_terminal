@@ -16,7 +16,7 @@ command line -> $ clang++ -D__MACOSX_CORE__ -framework SFML -framework SFML-audi
 
 12/9/2018
 #requires to manually copy the content of SFML package SFML/Frameworks AND SFML/extlibs to /Library/Frameworks
-command line -> $ clang++ -D__MACOSX_CORE__ -framework SFML -framework SFML-audio -framework SFML-system -o mellotron main.cpp ./utils/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation	
+command line -> $ clang++ -std=c++11 -pthread -D__MACOSX_CORE__ -framework SFML -framework SFML-audio -framework SFML-system -o mellotron main.cpp ./utils/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation	
 
 
 

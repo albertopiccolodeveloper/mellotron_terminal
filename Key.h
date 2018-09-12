@@ -1,5 +1,6 @@
-#include <SFML/Audio.hpp>
-#include <SFML/System/Time.hpp>
+//#include <SFML/Audio.hpp>
+//#include <SFML/System/Time.hpp>
+#include "TapeHead.h"
 //static variables
 //Mellotron M400 has 3 sample for each key
 const int sound_channels_number = 3;//
@@ -26,6 +27,9 @@ class Key
     private:
         //sound variables
         sf::Sound head;
+        //TapeHead head;
+
+
         sf::SoundBuffer tape[sound_channels_number];
         //
         sf::Time length[sound_channels_number];
@@ -94,24 +98,11 @@ bool Key::release(bool damper)
 bool Key::damp(bool damper)
 {
     if(!this->pressed && damper){
-        
-        //this->head.setVolume(0);
-        //fast fadeout (to avoid clicking)
-        float fade = this->head.getVolume();
-        float attenuation = fade / 1000;
-        while(fade > 0)
-        {
-            this->head.setVolume(fade);
-            fade -= attenuation;
-            sf::sleep(sf::microseconds(25));
-        }
-        //sf::Time offset = sf::seconds(0.2);
-        //this->head.setPlayingOffset(this->length[this->tape_channel] - offset);
-        //this->head.pause();
-        //this->head.setPlayingOffset(sf::Time::Zero);
 
         //stop playing tape and rewind
-        this->head.stop();
+        //this->head.stop();
+        TapeHead temp(this->head);
+        temp.asynchronous_stop();
         
         //std::cout << "\n" << this->note << this->octave << " Key damped!\n";
 
