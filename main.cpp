@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-//#include <signal.h>
 #include <fstream>
 //Mellotron Class
 #include "Mellotron.h"

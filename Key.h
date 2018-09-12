@@ -27,8 +27,11 @@ class Key
         //sound variables
         sf::Sound head;
         sf::SoundBuffer tape[sound_channels_number];
+        //
+        sf::Time length[sound_channels_number];
         //logic variables
         bool pressed;
+        int tape_channel;
         //
         unsigned long long memory_allocated;
 };
@@ -62,6 +65,7 @@ void Key::align_head(int channel)
 {
     this->head.stop();
     this->head.setBuffer(this->tape[channel]);
+    this->tape_channel = channel;
 }
 
 
@@ -90,11 +94,23 @@ bool Key::release(bool damper)
 bool Key::damp(bool damper)
 {
     if(!this->pressed && damper){
+        
+        //this->head.setVolume(0);
+        //fast fadeout (to avoid clicking)
+        float fade = this->head.getVolume();
+        while(fade > 0)
+        {
+            this->head.setVolume(fade);
+            fade -= 1.00;
+            sf::sleep(sf::microseconds(200));
+        }
+        //sf::Time offset = sf::seconds(0.2);
+        //this->head.setPlayingOffset(this->length[this->tape_channel] - offset);
+        //this->head.pause();
+        //this->head.setPlayingOffset(sf::Time::Zero);
+
         //stop playing tape and rewind
-        this->head.setVolume(0);
-        this->head.pause();
-        this->head.setPlayingOffset(sf::Time::Zero);
-        //this->head.stop();
+        this->head.stop();
         
         //std::cout << "\n" << this->note << this->octave << " Key damped!\n";
 
@@ -128,6 +144,8 @@ int Key::load_tape(std::string sample_src,int sound_channel)
         std::cout << "\nBuffer not loaded..";
         return 0;
     }
+
+    this->length[channel] = this->tape[channel].getDuration();
 
     return 1;
 }
