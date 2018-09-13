@@ -238,12 +238,14 @@ void Mellotron::setVolume(unsigned int vol)
 
 void Mellotron::raisePitch()
 {
-    this->pitch += 0.01;
+    if(this->pitch < 1.05)
+        this->pitch += 0.005;
 }
 
 void Mellotron::lowerPitch()
 {
-    this->pitch -= 0.01;
+    if(this->pitch > 0.95)
+        this->pitch -= 0.005;
 }
 
 float Mellotron::getPitch()
