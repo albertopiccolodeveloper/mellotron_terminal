@@ -27,9 +27,6 @@ class Key
     private:
         //sound variables
         sf::Sound head;
-        //TapeHead head;
-
-
         sf::SoundBuffer tape[sound_channels_number];
         //
         sf::Time length[sound_channels_number];

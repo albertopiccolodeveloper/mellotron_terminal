@@ -4,7 +4,8 @@
 //
 const std::string key_note_names[12] = {"C","C#","D","D#","E","F","F#","G","G#","A","A#","B"};
 //definita poi nel main, da rivedere
-std::unordered_map<std::string,int> piano_models; 
+std::unordered_map<std::string,int> piano_models;
+std::unordered_map<int,std::vector<std::string> > model_sounds; 
  //fine variabili statiche
 //////////////////////////////////////////
 class Mellotron
@@ -26,6 +27,8 @@ class Mellotron
         //
         void setTapeChannel(int channel_number);
         int getTapeChannel();
+        std::string getModel();
+        std::string getSoundName();
         //
         int damperOn();
         void damperOff();
@@ -55,6 +58,7 @@ class Mellotron
         float pitch;
         int key_n;
         int sound_channel;
+        std::string model;
         //MIDI data
         RtMidiIn *midiin;
         //MIDI callback
@@ -171,6 +175,16 @@ int Mellotron::getTapeChannel()
     return this->sound_channel;
 }
 
+std::string Mellotron::getModel()
+{
+    return this->model;
+}
+
+std::string Mellotron::getSoundName()
+{
+    return model_sounds.at(piano_models.at(this->model))[this->sound_channel];
+}
+
 void Mellotron::damperOff()
 {
     this->damper = false;
@@ -200,6 +214,9 @@ int Mellotron::load_tapes(std::string model)
     for(int c=0;c<this->key_n;c++)
         success+=this->keyboard[c].autoload_tape(piano_models.at(model));
 
+    if(success > 0)
+        this->model = model;
+    
     this->setTapeChannel(0);
     return success;
 

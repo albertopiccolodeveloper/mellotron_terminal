@@ -9,7 +9,7 @@ using namespace std;
 
 void print_help()
 {
-    cout << "\nType 1 to 9 (0 = 100%) to set volume\nType +/- to change pitch\nType </> to switch between tape channel\nType m to scan again for MIDI devices\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
+    cout << "\nType 1 to 9 (0 = 100%) to set volume\nType +/- to change pitch\nType </> to switch between tape channel\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
 }
 
 void print_hello()
@@ -37,6 +37,11 @@ void init_piano_models()
     piano_models["MKII"] = 1;
     piano_models["M300"] = 2;
     piano_models["ensemble"] = 3;
+    //
+    model_sounds[0] = {"Flute","String Section","Cello"};
+    model_sounds[1] = {"Flute","3 Violins","Brass"};
+    model_sounds[2] = {"Strings A","Strings B","Brass"};
+    model_sounds[3] = {"Woodwinds","String Section", "Choir"};
 }
 
 
@@ -78,7 +83,8 @@ int main()
     print_help();
 
     do{
-        cout << "\nTape Channel: " << Mellotron.getTapeChannel() + 1;
+        cout << "\n" << Mellotron.getModel();
+        cout << "\nTape Channel #" << Mellotron.getTapeChannel() + 1 << ": " << Mellotron.getSoundName();
         cout << "\nVolume: " << Mellotron.getVolume() << " %";
         cout << "\nPitch: " << Mellotron.getPitch();
         cout << endl << ">> ";
@@ -92,11 +98,13 @@ int main()
             case 'h':
                 print_help();
             break;
+            /*
             case 'm':
                 cout << "\nChecking for MIDI input.. " << flush;
                 Mellotron.check_for_MIDI();
                 cout << endl;
             break;
+            */
             case '1':
                 Mellotron.setVolume(10);
             break;
