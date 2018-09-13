@@ -33,7 +33,13 @@ class Mellotron
         //
         void raiseVolume();
         void lowerVolume();
+        void setVolume(unsigned int vol);
         unsigned int getVolume();
+        //
+        void raisePitch();
+        void lowerPitch();
+        float getPitch();
+        void resetPitch();
         //
         void info();
         //MIDI handlers
@@ -63,8 +69,8 @@ Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_
     this->damper = true;
     this->sound_channel = 0;
     this->midiin = 0;
-    this->general_volume = 70;
-    this->pitch = 0.00;
+    this->general_volume = 50;
+    this->pitch = 1.00;
 
     int d = 0;
     
@@ -100,13 +106,15 @@ Mellotron::Mellotron(const unsigned int keys,std::string lowest_note,int lowest_
 
 int Mellotron::keyStrikeByKeyN(int key_number,float dynamic)
 {
-    return this->keyboard[key_number].strike(dynamic);
+    //ignore dynamic key press
+    return this->keyboard[key_number].strike(this->general_volume,this->pitch);
 }
 
 int Mellotron::keyStrikeByNote(std::string note_name,float dynamic)
 {
+    //ignore dynamic key press
     try{
-        return this->keyboard[this->keyboard_map.at(note_name)].strike(dynamic);
+        return this->keyboard[this->keyboard_map.at(note_name)].strike(this->general_volume,this->pitch);
     }catch(const std::out_of_range& oor){
         //std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return 0;
@@ -115,8 +123,9 @@ int Mellotron::keyStrikeByNote(std::string note_name,float dynamic)
 
 int Mellotron::keyStrikeByMidiInterface(int midi_input,float dynamic)
 {
+    //ignore dynamic key press
     try{
-        return this->keyboard[this->midi_key_map.at(midi_input)].strike(dynamic);
+        return this->keyboard[this->midi_key_map.at(midi_input)].strike(this->general_volume,this->pitch);
     }catch(const std::out_of_range& oor){
         //std::cout << "\nKey not playable - (" << oor.what() <<") Out of Range Exception!";
         return 0;
@@ -222,6 +231,30 @@ unsigned int Mellotron::getVolume()
     return this->general_volume;
 }
 
+void Mellotron::setVolume(unsigned int vol)
+{
+    this->general_volume = vol;
+}
+
+void Mellotron::raisePitch()
+{
+    this->pitch += 0.01;
+}
+
+void Mellotron::lowerPitch()
+{
+    this->pitch -= 0.01;
+}
+
+float Mellotron::getPitch()
+{
+    return this->pitch;
+}
+
+void Mellotron::resetPitch()
+{
+    this->pitch = 1.00;
+}
 
 
 void Mellotron::info()
@@ -283,12 +316,14 @@ int Mellotron::check_for_MIDI()
             catch ( RtMidiError &error ) {
                 error.printMessage();
                 delete this->midiin;
+                this->midiin = 0;
                 return -1;
             }
             std::cout << "\nPort #" << i << ": " << portName;
         }
     }else{
         delete this->midiin;
+        this->midiin = 0;
         return -1;
     }
     //choose device port
@@ -306,6 +341,7 @@ int Mellotron::check_for_MIDI()
     catch ( RtMidiError &error ) {
         error.printMessage();
         delete this->midiin;
+        this->midiin = 0;
         return -1;
     }
     //
@@ -335,7 +371,7 @@ void Mellotron::MIDIreadCallback(double deltatime, std::vector< unsigned char > 
             case 144:
                 //note hit
                 if((int) message->at(2) > 0)
-                    pInstrument->keyStrikeByMidiInterface((int)message->at(1),pInstrument->general_volume);
+                    pInstrument->keyStrikeByMidiInterface((int)message->at(1),(int)message->at(2));
                 else    
                     pInstrument->keyReleaseByMidiInterface((int)message->at(1));
             break;

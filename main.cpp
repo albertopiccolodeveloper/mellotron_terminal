@@ -9,7 +9,7 @@ using namespace std;
 
 void print_help()
 {
-    cout << "\nType +/- to change volume\nType 1,2,3 to switch between sounds\nType m to scan again for MIDI devices\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
+    cout << "\nType 1 to 9 (0 = 100%) to set volume\nType +/- to change pitch\nType </> to switch between tape channel\nType m to scan again for MIDI devices\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
 }
 
 void print_hello()
@@ -80,6 +80,7 @@ int main()
     do{
         cout << "\nTape Channel: " << Mellotron.getTapeChannel() + 1;
         cout << "\nVolume: " << Mellotron.getVolume() << " %";
+        cout << "\nPitch: " << Mellotron.getPitch();
         cout << endl << ">> ";
         cin >> key_input;
         
@@ -96,20 +97,51 @@ int main()
                 Mellotron.check_for_MIDI();
                 cout << endl;
             break;
-            case '+':
-                Mellotron.raiseVolume();
-            break;
-            case '-':
-                Mellotron.lowerVolume();
-            break;
             case '1':
-                Mellotron.setTapeChannel(0);
+                Mellotron.setVolume(10);
             break;
             case '2':
-                Mellotron.setTapeChannel(1);
+                Mellotron.setVolume(20);
             break;
             case '3':
-                Mellotron.setTapeChannel(2);
+                Mellotron.setVolume(30);
+            break;
+            case '4':
+                Mellotron.setVolume(40);
+            break;
+            case '5':
+                Mellotron.setVolume(50);
+            break;
+            case '6':
+                Mellotron.setVolume(60);
+            break;
+            case '7':
+                Mellotron.setVolume(70);
+            break;
+            case '8':
+                Mellotron.setVolume(80);
+            break;
+            case '9':
+                Mellotron.setVolume(90);
+            break;
+            case '0':
+                Mellotron.setVolume(100);
+            break;
+            case '+':
+                Mellotron.raisePitch();
+            break;
+            case '-':
+                Mellotron.lowerPitch();
+            break;
+            case '>':
+                sound_channel = Mellotron.getTapeChannel();
+                if(sound_channel < (sound_channels_number - 1))
+                    Mellotron.setTapeChannel(sound_channel + 1);
+            break;
+            case '<':
+                sound_channel = Mellotron.getTapeChannel();
+                if(sound_channel > 0)
+                    Mellotron.setTapeChannel(sound_channel - 1);
             break;
             case 'L':
                 cout << "\nChoose sound and channel:\n";

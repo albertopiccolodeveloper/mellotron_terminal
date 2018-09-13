@@ -16,7 +16,7 @@ class Key
         int load_tape(std::string sample_src,int sound_channel);//load con percorso forzato
         void align_head(int channel);
         //
-        bool strike(float volume);
+        bool strike(float volume,float pitch);
         bool release(bool damper);
         bool damp(bool damper);
         //
@@ -74,7 +74,7 @@ void Key::align_head(int channel)
 
 
 
-bool Key::strike(float volume)
+bool Key::strike(float volume,float pitch)
 {
     if(this->pressed)
         return false;
@@ -82,6 +82,7 @@ bool Key::strike(float volume)
         this->pressed = true;
         //std::cout << "\n" << this->note << this->octave << " Key stroke!\n";
         //start playing tape
+        this->head.setPitch(pitch);
         this->head.setVolume(volume);
         this->head.play();
     }
