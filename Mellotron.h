@@ -59,6 +59,7 @@ class Mellotron
         int key_n;
         int sound_channel;
         std::string model;
+        std::string sound_name[sound_channels_number];
         //MIDI data
         RtMidiIn *midiin;
         //MIDI callback
@@ -182,7 +183,7 @@ std::string Mellotron::getModel()
 
 std::string Mellotron::getSoundName()
 {
-    return model_sounds.at(piano_models.at(this->model))[this->sound_channel];
+    return this->sound_name[this->sound_channel];
 }
 
 void Mellotron::damperOff()
@@ -214,8 +215,12 @@ int Mellotron::load_tapes(std::string model)
     for(int c=0;c<this->key_n;c++)
         success+=this->keyboard[c].autoload_tape(piano_models.at(model));
 
-    if(success > 0)
+    if(success > 0){
         this->model = model;
+        this->sound_name[0] = model_sounds.at(piano_models.at(this->model))[0];
+        this->sound_name[1] = model_sounds.at(piano_models.at(this->model))[1];
+        this->sound_name[2] = model_sounds.at(piano_models.at(this->model))[2];
+    }
     
     this->setTapeChannel(0);
     return success;
@@ -225,9 +230,18 @@ int Mellotron::load_tapes(std::string model)
 int Mellotron::load_tapes(std::string sound_src,int channel)
 {
     int success = 0;
-    for(int c=0;c<this->key_n;c++)
-        success+=this->keyboard[c].load_tape(sound_src,channel);
-    this->setTapeChannel(0);
+    std::string audio_filename;
+    for(int c=0;c<this->key_n;c++){
+        audio_filename = "/" + this->keyboard[c].note + std::to_string(this->keyboard[c].octave) + ".wav";
+        success+=this->keyboard[c].load_tape(sound_src + audio_filename,channel);
+    }
+    if(success > 0)
+    {
+        this->sound_name[channel] = sound_src;
+    }
+
+    this->setTapeChannel(channel);
+
     return success;
 }
 

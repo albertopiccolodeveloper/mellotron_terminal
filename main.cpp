@@ -9,7 +9,7 @@ using namespace std;
 
 void print_help()
 {
-    cout << "\nType 1 to 9 (0 = 100%) to set volume\nType +/- to change pitch\nType </> to switch between tape channel\nType l to load different preset sounds\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
+    cout << "\nType 1 to 9 (0 = 100%) to set volume\nType +/- to change pitch\nType </> to switch between tape channel\nType l to load different sound preset\nType L to load custom sounds\nType p to print keyboard info\nType h to print this help\nType x to exit.." << endl;
 }
 
 void print_hello()
@@ -153,7 +153,7 @@ int main()
             break;
             case 'L':
                 cout << "\nChoose sound and channel:\n";
-                cout << "\nSound Path (relative to samples folder) >>";
+                cout << "\nSound Name (relative to samples folder) >>";
                 cin >> sound_src;
                 cout << "\nTape Channel (1,2,3) >>";
                 cin >> channel_new_sound;
