@@ -1,0 +1,30 @@
+Mellotron simulator is an open source Terminal App for macOS X (Tested on High Sierra) written in C++.
+It's based on SFML Framework and RtMidi.
+
+https://www.sfml-dev.org/
+https://github.com/thestk/rtmidi
+
+The app was intended to use https://sonicbloom.net/en/free-sb-mellotron-samples/ but you can use your own sounds with almost no tweaking.
+
+If you have downloaded the sound library directly from sonicbloom you should run ./bash_scripts/autoformat_samples.sh to set the correct paths for your files and folders.
+There is a soundclip for each key and if you want to add your own samples just format the name correctly.
+
+./samples/{soundname-with-no-whitespaces}/{notename}[#]{octave}.wav
+
+Example.:
+
+./samples/M300A/G2.wav
+./samples/M300A/A#2.wav
+./samples/M300A/B2.wav
+
+and so on..
+
+
+Installation:
+
+Download SFML Framework and follow the instructions.
+Copy the content of SFML package SFML/Frameworks AND SFML/extlibs to /Library/Frameworks.
+
+The correct Libraries are already included in this repository, you just need the compiled frameworks to make the application work.
+
+command line -> $ clang++ -std=c++11 -pthread -D__MACOSX_CORE__ -framework SFML -framework SFML-audio -framework SFML-system -o mellotron main.cpp ./utils/RtMidi.cpp -framework CoreMIDI -framework CoreAudio -framework CoreFoundation

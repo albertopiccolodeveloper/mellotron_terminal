@@ -25,7 +25,7 @@ void print_hello()
             cout << line << "\n";
         }
     }  
-    cout << "\nby Little Albert, 2018";
+    cout << "\nby AP-dev applications, 2018";
     cout << endl;
     file.close();
 }
